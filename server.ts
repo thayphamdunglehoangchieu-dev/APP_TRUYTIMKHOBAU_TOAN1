@@ -45,14 +45,15 @@ function getGeminiClient(req: Request): GoogleGenAI | null {
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-async function generateContentWithRetry(aiClient: GoogleGenAI | null, params: any, retries = 4) {
+async function generateContentWithRetry(aiClient: GoogleGenAI | null, params: any, retries = 3) {
   if (!aiClient) {
     throw new Error('Hệ thống chưa thiết lập Gemini API Key. Vui lòng cấu hình API Key trên Header.');
   }
   let lastError: any = null;
+  let userModelError: any = null;
   
-  // Cascade chain: primary, secondary fallback, tertiary fallback, quaternary fallback
-  const modelChain = ['gemini-3-flash-preview', 'gemini-3-pro-preview', 'gemini-2.5-flash', 'gemini-1.5-flash'];
+  // Cascade chain: active models in 2026
+  const modelChain = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-3.5-flash'];
   
   for (let attempt = 0; attempt < retries; attempt++) {
     // Try the specified model or fallback along the chain
@@ -73,7 +74,11 @@ async function generateContentWithRetry(aiClient: GoogleGenAI | null, params: an
       const errorMessage = err?.message || err?.toString() || 'Unknown error';
       console.warn(`[Gemini Attempt ${attempt + 1}/${retries}] Error using ${modelToUse}:`, errorMessage);
       
-      // If we got a credit/quota or high-demand error, try next model in the cascade chain
+      if (attempt === 0) {
+        userModelError = err;
+      }
+      
+      // If we got an error, try next model in the cascade chain
       if (attempt < retries - 1) {
         const delay = 500 * (attempt + 1);
         console.log(`Waiting ${delay}ms before cascading/retrying...`);
@@ -81,7 +86,7 @@ async function generateContentWithRetry(aiClient: GoogleGenAI | null, params: an
       }
     }
   }
-  throw lastError;
+  throw userModelError || lastError;
 }
 
 // In-memory logs representing real-time student activity database
@@ -488,7 +493,7 @@ app.get('/api/teacher/logs', (req: Request, res: Response) => {
 app.post('/api/gemini/get-hint', async (req: Request, res: Response) => {
   const { questionText, studentAnswer, category, station } = req.body;
   const aiClient = getGeminiClient(req);
-  const reqModel = req.headers['x-gemini-model'] as string || 'gemini-3-flash-preview';
+  const reqModel = req.headers['x-gemini-model'] as string || 'gemini-2.5-flash';
 
   if (!aiClient) {
     // Offline AI Master fallback
@@ -529,7 +534,7 @@ Nhiệm vụ của bạn:
 app.post('/api/gemini/generate-questions', async (req: Request, res: Response) => {
   const { theme, grade, challengeType } = req.body; // e.g. "Toán lớp 6", challengeType: "challenge1"
   const aiClient = getGeminiClient(req);
-  const reqModel = req.headers['x-gemini-model'] as string || 'gemini-3-flash-preview';
+  const reqModel = req.headers['x-gemini-model'] as string || 'gemini-2.5-flash';
   
   if (!aiClient) {
     res.status(500).json({ error: 'Hệ thống chưa thiết lập Gemini API Key. Vui lòng cấu hình API Key trên Header.' });
@@ -714,7 +719,7 @@ function getResponseSchema(challengeType: string) {
 app.post('/api/gemini/ocr-import', async (req: Request, res: Response) => {
   const { docContent, challengeType } = req.body; // text representation extracted from doc/pasted text and challenge type
   const aiClient = getGeminiClient(req);
-  const reqModel = req.headers['x-gemini-model'] as string || 'gemini-3-flash-preview';
+  const reqModel = req.headers['x-gemini-model'] as string || 'gemini-2.5-flash';
 
   if (!aiClient) {
     res.status(500).json({ error: 'Hệ thống chưa thiết lập Gemini API Key. Vui lòng cấu hình API Key trên Header.' });
@@ -812,7 +817,7 @@ import mammoth from 'mammoth';
 app.post('/api/gemini/ocr-file', async (req: Request, res: Response) => {
   const { fileBase64, fileName, mimeType, challengeType } = req.body;
   const aiClient = getGeminiClient(req);
-  const reqModel = req.headers['x-gemini-model'] as string || 'gemini-3-flash-preview';
+  const reqModel = req.headers['x-gemini-model'] as string || 'gemini-2.5-flash';
 
   if (!aiClient) {
     res.status(500).json({ error: 'Hệ thống chưa thiết lập Gemini API Key. Vui lòng cấu hình API Key trên Header.' });
@@ -930,7 +935,7 @@ Trả về một mảng JSON 22 trạm chuẩn chỉnh theo đúng cấu trúc S
 // 9. Gemini: Analyze student performance dashboard & output report suggestions
 app.post('/api/gemini/generate-report-suggestions', async (req: Request, res: Response) => {
   const aiClient = getGeminiClient(req);
-  const reqModel = req.headers['x-gemini-model'] as string || 'gemini-3-flash-preview';
+  const reqModel = req.headers['x-gemini-model'] as string || 'gemini-2.5-flash';
 
   if (!aiClient) {
     // Return markdown statically
