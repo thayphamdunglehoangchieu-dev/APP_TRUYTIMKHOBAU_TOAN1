@@ -46,6 +46,17 @@ export default function App() {
     setModalModelInput(geminiModel);
   }, [geminiModel]);
 
+  // Auto-heal model name if it was set to an old deprecated one in localStorage
+  useEffect(() => {
+    const storedModel = localStorage.getItem('gemini_api_model');
+    const validModels = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-3.5-flash'];
+    if (storedModel && !validModels.includes(storedModel)) {
+      console.log(`Resetting deprecated cached model ${storedModel} to gemini-2.5-flash`);
+      localStorage.setItem('gemini_api_model', 'gemini-2.5-flash');
+      setGeminiModel('gemini-2.5-flash');
+    }
+  }, []);
+
   // Mandatory modal if key is missing
   useEffect(() => {
     if (!geminiApiKey) {
