@@ -33,7 +33,7 @@ export default function App() {
 
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [geminiApiKey, setGeminiApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
-  const [geminiModel, setGeminiModel] = useState(() => localStorage.getItem('gemini_api_model') || 'gemini-3-flash-preview');
+  const [geminiModel, setGeminiModel] = useState(() => localStorage.getItem('gemini_api_model') || 'gemini-2.5-flash');
   const [modalKeyInput, setModalKeyInput] = useState(geminiApiKey);
   const [modalModelInput, setModalModelInput] = useState(geminiModel);
 
@@ -466,9 +466,9 @@ export default function App() {
                 <label className="block text-[10px] font-bold text-slate-500 uppercase">1. Chọn Model AI</label>
                 <div className="grid grid-cols-3 gap-2.5">
                   {[
-                    { id: 'gemini-3-flash-preview', label: 'gemini-3-flash', note: 'Flash (Default)' },
-                    { id: 'gemini-3-pro-preview', label: 'gemini-3-pro', note: 'Pro (Preview)' },
-                    { id: 'gemini-2.5-flash', label: 'gemini-2.5-flash', note: 'Flash 2.5 (Stable)' }
+                    { id: 'gemini-2.5-flash', label: 'gemini-2.5-flash', note: 'Flash (Default)' },
+                    { id: 'gemini-2.5-pro', label: 'gemini-2.5-pro', note: 'Pro (Stable)' },
+                    { id: 'gemini-3.5-flash', label: 'gemini-3.5-flash', note: 'Flash 3.5 (Preview)' }
                   ].map(m => {
                     const isSelected = modalModelInput === m.id;
                     return (
