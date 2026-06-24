@@ -1,0 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Times New Roman", Times, Baskerville, Georgia, serif;
+  --font-display: "Times New Roman", Times, Baskerville, Georgia, serif;
+  --font-mono: "Fira Code", ui-monospace, monospace;
+}
+
+html, body {
+  font-family: "Times New Roman", Times, Baskerville, Georgia, serif;
+}
+

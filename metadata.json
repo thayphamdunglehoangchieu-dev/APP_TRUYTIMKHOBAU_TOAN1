@@ -1,0 +1,6 @@
+{
+  "name": "Truy tìm kho báu",
+  "description": "Ứng dụng trò chơi giáo dục toán học 2D - Truy tìm kho báu dưới sự dẫn dắt của AI Game Master. Hỗ trợ học sinh học tập qua 22 trạm sinh cảnh và giáo viên Phạm Văn Dũng quản trị.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
