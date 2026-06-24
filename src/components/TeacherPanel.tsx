@@ -406,7 +406,7 @@ export default function TeacherPanel({
     setFeedbackMessage(null);
 
     const userKey = localStorage.getItem('gemini_api_key') || '';
-    const userModel = localStorage.getItem('gemini_api_model') || 'gemini-3-flash-preview';
+    const userModel = localStorage.getItem('gemini_api_model') || 'gemini-2.5-flash';
 
     const convertBase64 = (file: File): Promise<string> => {
       return new Promise((resolve, reject) => {
@@ -743,7 +743,7 @@ Trả về một mảng JSON các câu hỏi thạch đấu tương thích với
     setReportMarkdown('');
     
     const userKey = localStorage.getItem('gemini_api_key') || '';
-    const userModel = localStorage.getItem('gemini_api_model') || 'gemini-3-flash-preview';
+    const userModel = localStorage.getItem('gemini_api_model') || 'gemini-2.5-flash';
 
     let reportText = '';
     let success = false;
@@ -909,7 +909,7 @@ Lưu ý: Bạn hãy tính toán trực quan dựa trên logs và đưa ra đề 
   // Settle dynamic questions generator via Gemini model
   const handleGenerateQuestions = async () => {
     const userKey = localStorage.getItem('gemini_api_key') || '';
-    const userModel = localStorage.getItem('gemini_api_model') || 'gemini-3-flash-preview';
+    const userModel = localStorage.getItem('gemini_api_model') || 'gemini-2.5-flash';
 
     if (!userKey) {
       setFeedbackMessage({ type: 'error', text: "Hệ thống chưa thiết lập Gemini API Key. Vui lòng cấu hình API Key trên Header." });
@@ -1121,7 +1121,7 @@ Trả về một mảng JSON các đối tượng phù hợp với schema.`;
     setFeedbackMessage(null);
 
     const userKey = localStorage.getItem('gemini_api_key') || '';
-    const userModel = localStorage.getItem('gemini_api_model') || 'gemini-3-flash-preview';
+    const userModel = localStorage.getItem('gemini_api_model') || 'gemini-2.5-flash';
 
     let success = false;
     let questionsList: any[] = [];
