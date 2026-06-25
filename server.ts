@@ -55,6 +55,25 @@ async function generateContentWithRetry(aiClient: GoogleGenAI | null, params: an
   // Cascade chain: active models in 2026
   const modelChain = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-3.5-flash'];
   
+  // Sanitize the requested model
+  if (params && params.model) {
+    const modelStr = String(params.model).toLowerCase().trim();
+    if (modelStr.includes('gemini-1.5-flash')) {
+      params.model = 'gemini-2.5-flash';
+    } else if (modelStr.includes('gemini-1.5-pro')) {
+      params.model = 'gemini-2.5-pro';
+    } else if (modelStr.includes('gemini-3-flash') || modelStr.includes('gemini-3-flash-preview')) {
+      params.model = 'gemini-3.5-flash';
+    } else if (
+      !modelStr.includes('gemini-2.5-flash') &&
+      !modelStr.includes('gemini-2.5-pro') &&
+      !modelStr.includes('gemini-3.5-flash')
+    ) {
+      // Default to gemini-2.5-flash for any invalid or deprecated models
+      params.model = 'gemini-2.5-flash';
+    }
+  }
+
   for (let attempt = 0; attempt < retries; attempt++) {
     // Try the specified model or fallback along the chain
     let modelToUse = modelChain[attempt] || modelChain[modelChain.length - 1];
