@@ -1364,14 +1364,35 @@ Trả về cấu trúc JSON đúng chuẩn mảng ${total} câu hỏi tương th
     if (!confirm("Bạn có chắc chắn muốn khôi phục lại ngân hàng câu hỏi gốc gồm 22 trạm toán học điển hình không? All thay đổi sẽ bị ghi đè.")) return;
     try {
       const response = await fetch('/api/questions/reset', { method: 'POST' });
-      const data = await response.json();
-      if (data.success) {
-        onUpdateQuestions(data.questions);
-        onChangeGameActive?.(false); // Set to inactive when reset!
-        setFeedbackMessage({ type: 'success', text: 'Khôi phục ngân hàng câu hỏi gốc thành công và đã hoàn trả trạng thái trò chơi về chưa kích hoạt!' });
+      const text = await response.text();
+      let syncSuccess = false;
+      let questionsToUse = defaultQuestions;
+
+      if (response.ok && (text.trim().startsWith('{') || text.trim().startsWith('['))) {
+        try {
+          const data = JSON.parse(text);
+          if (data.success) {
+            syncSuccess = true;
+            questionsToUse = data.questions || defaultQuestions;
+          }
+        } catch (e) {
+          console.warn("Failed to parse reset response JSON:", e);
+        }
       }
-    } catch (err) {
-      console.error(err);
+
+      onUpdateQuestions(questionsToUse);
+      onChangeGameActive?.(false); // Set to inactive when reset!
+
+      if (syncSuccess) {
+        setFeedbackMessage({ type: 'success', text: 'Khôi phục ngân hàng câu hỏi gốc thành công và đã hoàn trả trạng thái trò chơi về chưa kích hoạt!' });
+      } else {
+        setFeedbackMessage({ type: 'warning', text: 'Đã khôi phục ngân hàng câu hỏi gốc cục bộ (Không thể kết nối đồng bộ với máy chủ).' });
+      }
+    } catch (err: any) {
+      console.warn("Failed to reset baseline on server, falling back to local:", err);
+      onUpdateQuestions(defaultQuestions);
+      onChangeGameActive?.(false);
+      setFeedbackMessage({ type: 'warning', text: `Đã khôi phục ngân hàng câu hỏi gốc cục bộ! (Máy chủ ngoại tuyến: ${err.message})` });
     }
   };
 
@@ -1418,16 +1439,40 @@ Trả về cấu trúc JSON đúng chuẩn mảng ${total} câu hỏi tương th
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ questions: updatedQuestions })
       });
-      const data = await response.json();
-      if (data.success) {
-        onUpdateQuestions(updatedQuestions);
-        setEditingStation(null);
+      
+      let syncSuccess = false;
+      let errMsg = '';
+
+      try {
+        const text = await response.text();
+        if (response.ok && (text.trim().startsWith('{') || text.trim().startsWith('['))) {
+          const data = JSON.parse(text);
+          if (data.success) {
+            syncSuccess = true;
+          } else {
+            errMsg = data.error || 'Lỗi lưu dữ liệu trên máy chủ';
+          }
+        } else {
+          errMsg = `HTTP ${response.status}: Phản hồi từ máy chủ không hợp lệ`;
+        }
+      } catch (parseErr: any) {
+        errMsg = parseErr.message || 'Không thể giải mã dữ liệu phản hồi';
+      }
+
+      // Always update local state
+      onUpdateQuestions(updatedQuestions);
+      setEditingStation(null);
+
+      if (syncSuccess) {
         setFeedbackMessage({ type: 'success', text: `Cập nhật thành công và đồng bộ Trạm ${editingStation} lên máy chủ!` });
       } else {
-        throw new Error(data.error || 'Lỗi lưu dữ liệu');
+        setFeedbackMessage({ type: 'warning', text: `Đã lưu thay đổi cục bộ vào trình duyệt! (Đồng bộ máy chủ thất bại: ${errMsg})` });
       }
     } catch (err: any) {
-      setFeedbackMessage({ type: 'error', text: `Không thể lưu thay đổi lên máy chủ: ${err.message}` });
+      // Always update local state even if offline
+      onUpdateQuestions(updatedQuestions);
+      setEditingStation(null);
+      setFeedbackMessage({ type: 'warning', text: `Đã lưu thay đổi cục bộ vào trình duyệt! (Máy chủ ngoại tuyến: ${err.message})` });
     }
   };
 
