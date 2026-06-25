@@ -549,7 +549,7 @@ export default function StudentAdventure({
       setLoadingHint(true);
       try {
         const userKey = localStorage.getItem('gemini_api_key') || '';
-        const userModel = localStorage.getItem('gemini_api_model') || 'gemini-3-flash-preview';
+        const userModel = localStorage.getItem('gemini_api_model') || 'gemini-2.5-flash';
 
         let hintText = '';
         let fetchedFromServer = false;
